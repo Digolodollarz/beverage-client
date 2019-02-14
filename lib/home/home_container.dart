@@ -36,7 +36,7 @@ class _ViewModel {
   final Function loadChats;
   final AppUser user;
   final String ecocashPhone;
-  final Function(PaymentRequest) makePayment;
+  final Function(PaymentRequest, BuildContext) makePayment;
 
   _ViewModel({this.loadChats, this.user, this.ecocashPhone, this.makePayment});
 
@@ -45,7 +45,8 @@ class _ViewModel {
       loadChats: () => store.dispatch(GetChats()),
       user: store.state.user,
       ecocashPhone: store.state.ecocashPhone,
-      makePayment: (_request) => store.dispatch(MakePayment(_request)),
+      makePayment: (_request, _context) =>
+          store.dispatch(MakePayment(_request, _context)),
     );
   }
 }
@@ -148,7 +149,8 @@ class HomePageState extends State<HomePage> {
                     SnackBar(content: Text('Paying $_paymentRequest')),
                   );
                   print(_paymentRequest.toJson());
-                  _pay(_paymentRequest);
+//                  _pay(_paymentRequest);
+                  widget.vm.makePayment(_paymentRequest, context);
                 }
               },
             ),

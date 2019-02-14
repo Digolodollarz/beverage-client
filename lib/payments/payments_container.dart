@@ -221,7 +221,7 @@ class PaymentsPageState extends State<PaymentsPage> {
 class _ViewModel {
   final Payment payment;
   final List<Payment> currentPayments;
-  final Function makePaymentCallback;
+  final Function(PaymentRequest, BuildContext) makePaymentCallback;
 
   _ViewModel({this.payment, this.makePaymentCallback, this.currentPayments});
 
@@ -229,8 +229,8 @@ class _ViewModel {
     return _ViewModel(
       payment: store.state.currentPayment,
       currentPayments: store.state.currentPayments,
-      makePaymentCallback: (PaymentRequest request) =>
-          store.dispatch(MakePayment(request)),
+      makePaymentCallback: (PaymentRequest request, context) =>
+          store.dispatch(MakePayment(request, context)),
     );
   }
 }

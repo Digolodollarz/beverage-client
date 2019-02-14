@@ -1,14 +1,32 @@
 import 'package:beverage_app/payments/payments_models.dart';
+import 'package:flutter/cupertino.dart';
 
 class MakePayment {
   PaymentRequest request;
+  BuildContext context;
 
-  MakePayment(this.request);
+  MakePayment(
+    this.request,
+    this.context,
+  );
+}
 
+class LoadPayments {
+  final BuildContext context;
+
+  LoadPayments({this.context});
+}
+
+class LoadPaymentsSuccessful {
+  List<Payment> payments;
+
+  LoadPaymentsSuccessful({this.payments});
 }
 
 class MakePaymentSuccessful {
-  Payment payment;
+  final PaymentRequest payment;
+
+  MakePaymentSuccessful(this.payment);
 }
 
 class GetPayment {
@@ -17,10 +35,4 @@ class GetPayment {
 
 class GetPaymentSuccessful {
   Payment payment;
-}
-
-class GetPayments {}
-
-class GetPaymentsSuccessful {
-  List<Payment> payments;
 }
