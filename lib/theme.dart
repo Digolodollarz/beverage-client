@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 ThemeData getAppTheme() {
   var base = ThemeData(
     brightness: Brightness.light,
-    primarySwatch: Colors.cyan,
+    primarySwatch: Colors.purple,
 
   );
 
   return base.copyWith(
-      textTheme: base.textTheme.apply(fontFamily: 'SegoeUi')
+      textTheme: base.textTheme.apply(fontFamily: 'VarelaRound')
   );
 }

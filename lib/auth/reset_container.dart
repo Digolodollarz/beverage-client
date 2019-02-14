@@ -27,6 +27,8 @@ class ResetPage extends StatelessWidget {
       body: Container(
         child: ResetForm(
           error: vm.error,
+          requestResetCallback: vm.requestResetCallback,
+          resetCallback: vm.resetCallback,
         ),
       ),
     );

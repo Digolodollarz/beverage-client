@@ -1,3 +1,4 @@
+import 'package:beverage_app/payments/payments_middleware.dart';
 import 'package:flutter/material.dart';
 import 'package:beverage_app/app_state.dart';
 import 'package:beverage_app/auth/auth_actions.dart';
@@ -35,6 +36,7 @@ void main() async {
       ..addAll(createAuthMiddleware())
       ..addAll(createChatsMiddleware())
       ..addAll(createChatMiddleware())
+      ..addAll(createPaymentMiddleware())
       ..add(new LoggingMiddleware.printer()),
   );
   runApp(MyApp(

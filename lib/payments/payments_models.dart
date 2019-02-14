@@ -42,8 +42,17 @@ class PaymentRequest {
   Map<String, double> items;
   String reference;
   String method;
+  String email;
+  String phone;
 
-  PaymentRequest({this.user, this.items, this.reference, this.method});
+  PaymentRequest({
+    this.user,
+    this.items,
+    this.reference,
+    this.method,
+    this.email,
+    this.phone,
+  });
 
   factory PaymentRequest.fromJson(Map<String, dynamic> json) =>
       _$PaymentRequestFromJson(json);

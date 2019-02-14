@@ -10,16 +10,17 @@ class AppState {
   final List<Payment> currentPayments;
   final Chat currentChat;
   final List<Chat> chats;
+  final String ecocashPhone;
 
-  AppState({
-    this.user,
-    this.isLoading,
-    this.error,
-    this.currentPayment,
-    this.currentPayments,
-    this.currentChat,
-    this.chats,
-  });
+  AppState(
+      {this.user,
+      this.isLoading,
+      this.error,
+      this.currentPayment,
+      this.currentPayments,
+      this.currentChat,
+      this.chats,
+      this.ecocashPhone});
 
   AppState copyWith({
     bool isLoading,
@@ -29,6 +30,7 @@ class AppState {
     currentPayments,
     currentChat,
     chats,
+    ecocashPhone,
   }) {
     return new AppState(
       isLoading: isLoading ?? this.isLoading,
@@ -38,6 +40,7 @@ class AppState {
       currentPayments: currentPayments ?? this.currentPayments,
       currentChat: currentChat ?? this.currentChat,
       chats: chats ?? this.chats,
+      ecocashPhone: ecocashPhone ?? this.ecocashPhone,
     );
   }
 
@@ -45,12 +48,14 @@ class AppState {
     if (json == null) return AppState();
     return AppState(
       user: json['user'] != null ? AppUser.fromJson(json['user']) : null,
+      ecocashPhone: json['ecocashPhone'],
     );
   }
 
   dynamic toJson() {
     return {
       'user': user?.toJson(),
+      'ecocashPhone': ecocashPhone,
     };
   }
 

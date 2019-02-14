@@ -34,6 +34,7 @@ dev_dependencies:
     sdk: flutter
   build_runner: ^1.0.0
   json_serializable: ^2.0.0
+  flutter_launcher_icons: ^0.7.0
 
 
 # For information on the generic Dart part of this file, see the
@@ -64,9 +65,9 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: SegoeUi
+    - family: VarelaRound
       fonts:
-        - asset: assets/fonts/segoeui.ttf
+        - asset: assets/fonts/VarelaRound-Regular.ttf
 #         - asset: fonts/Schyler-Italic.ttf
 #           style: italic
   #   - family: Trajan Pro

@@ -180,7 +180,7 @@ class PaymentsPageState extends State<PaymentsPage> {
                           controller: _ecoCashNumberController,
                           keyboardType:
                               TextInputType.numberWithOptions(decimal: false),
-                          validator: _econetNumberValidator,
+                          validator: EconetNumberValidator,
                           inputFormatters: [EcoCashNumberTextFormatter()],
                         ),
                       ),
@@ -216,13 +216,6 @@ class PaymentsPageState extends State<PaymentsPage> {
       this._paymentRadioValue = value;
     });
   }
-
-  String _econetNumberValidator(String value) {
-    if (value.isEmpty) return 'Empty';
-    var exp = new RegExp(r"07(7|8)\d{7}");
-    if (exp.hasMatch(value)) return null;
-    return 'Invalid number';
-  }
 }
 
 class _ViewModel {
@@ -250,10 +243,14 @@ class EcoCashNumberTextFormatter extends TextInputFormatter {
     } else if (newValue.text.compareTo(oldValue.text) != 0) {
       int selectionIndexFromTheRight =
           newValue.text.length - newValue.selection.end;
-      final newString = newValue.text
+
+      String newString = newValue.text
           .toString()
           .replaceFirst(r"+263", "0")
           .replaceAll(" ", "");
+      if (newString.startsWith('7')) {
+        newString = '0$newString';
+      }
       return new TextEditingValue(
         text: newString,
         selection: TextSelection.collapsed(
@@ -263,4 +260,11 @@ class EcoCashNumberTextFormatter extends TextInputFormatter {
       return newValue;
     }
   }
+}
+
+String EconetNumberValidator(String value) {
+  if (value.isEmpty) return 'Empty';
+  var exp = new RegExp(r"07(7|8)\d{7}");
+  if (exp.hasMatch(value)) return null;
+  return 'Invalid number';
 }

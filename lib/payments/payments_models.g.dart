@@ -60,7 +60,9 @@ PaymentRequest _$PaymentRequestFromJson(Map<String, dynamic> json) {
       items: (json['items'] as Map<String, dynamic>)
           ?.map((k, e) => MapEntry(k, (e as num)?.toDouble())),
       reference: json['reference'] as String,
-      method: json['method'] as String);
+      method: json['method'] as String,
+      email: json['email'] as String,
+      phone: json['phone'] as String);
 }
 
 Map<String, dynamic> _$PaymentRequestToJson(PaymentRequest instance) {
@@ -76,5 +78,7 @@ Map<String, dynamic> _$PaymentRequestToJson(PaymentRequest instance) {
   writeNotNull('items', instance.items);
   writeNotNull('reference', instance.reference);
   writeNotNull('method', instance.method);
+  writeNotNull('email', instance.email);
+  writeNotNull('phone', instance.phone);
   return val;
 }

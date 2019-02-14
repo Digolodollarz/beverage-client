@@ -1,3 +1,9 @@
+import 'dart:convert';
+
+import 'package:beverage_app/api_endpoints.dart';
+import 'package:beverage_app/external/fluid_slider.dart';
+import 'package:beverage_app/payments/payments_actions.dart';
+import 'package:beverage_app/payments/payments_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:location/location.dart';
@@ -12,6 +18,7 @@ import 'package:beverage_app/home/dashboard_item_widget.dart';
 import 'package:beverage_app/location/location_page.dart';
 import 'package:beverage_app/payments/payments_container.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 class HomeContainer extends StatelessWidget {
   @override
@@ -28,25 +35,42 @@ class HomeContainer extends StatelessWidget {
 class _ViewModel {
   final Function loadChats;
   final AppUser user;
+  final String ecocashPhone;
+  final Function(PaymentRequest) makePayment;
 
-  _ViewModel({this.loadChats, this.user});
+  _ViewModel({this.loadChats, this.user, this.ecocashPhone, this.makePayment});
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
       loadChats: () => store.dispatch(GetChats()),
       user: store.state.user,
+      ecocashPhone: store.state.ecocashPhone,
+      makePayment: (_request) => store.dispatch(MakePayment(_request)),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final _ViewModel vm;
 
   const HomePage({Key key, this.vm}) : super(key: key);
 
   @override
+  HomePageState createState() {
+    return new HomePageState();
+  }
+}
+
+class HomePageState extends State<HomePage> {
+  double beverageAmount = 330;
+  TextEditingController _ecoCashNumberController = TextEditingController();
+  final _numberFormKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text("Beverage"),
         actions: <Widget>[
@@ -67,19 +91,66 @@ class HomePage extends StatelessWidget {
       ),
       body: Container(
         padding: EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColorLight,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Column(
           children: <Widget>[
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                children: <Widget>[
-                  DashboardItem(),
-                  DashboardItem(),
-                  DashboardItem(),
-                  DashboardItem(),
-                  DashboardItem(),
-                ],
+            Text('Amount of juice'),
+            Text('$beverageAmount ml'),
+            FluidSlider(
+              value: beverageAmount,
+              onChanged: (double newValue) {
+                setState(() {
+                  beverageAmount = newValue;
+                });
+              },
+              min: 0.0,
+              max: 1000.0,
+              sliderColor: Theme.of(context).primaryColor,
+              thumbColor: Theme.of(context).accentColor,
+            ),
+            Visibility(
+              visible: true,
+              child: Form(
+                key: _numberFormKey,
+                child: TextFormField(
+                  controller: _ecoCashNumberController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: false),
+                  validator: EconetNumberValidator,
+                  inputFormatters: [EcoCashNumberTextFormatter()],
+                ),
               ),
+            ),
+            RaisedButton(
+              child: Text("Make Payment"),
+              onPressed: () {
+                if (_numberFormKey.currentState.validate()) {
+//                  widget.vm.makePaymentCallback(_paymentRequest);
+                  final _paymentRequest = PaymentRequest();
+                  _paymentRequest.items = {
+                    '${beverageAmount.toInt()}ml Juice':
+                        beverageAmount * 5 / 1000
+                  };
+                  _paymentRequest.reference = DateTime.now().toIso8601String();
+                  _paymentRequest.method = "ECOCASH";
+                  _paymentRequest.email = widget.vm.user.email.toLowerCase();
+                  _paymentRequest.user = widget.vm.user;
+                  _paymentRequest.phone = _ecoCashNumberController.text;
+                  _scaffoldKey.currentState.showSnackBar(
+                    SnackBar(content: Text('Paying $_paymentRequest')),
+                  );
+                  print(_paymentRequest.toJson());
+                  _pay(_paymentRequest);
+                }
+              },
             ),
             LogoutContainer(),
           ],
@@ -114,6 +185,82 @@ class HomePage extends StatelessWidget {
       throw e;
     }
   }
+
+  Future _requestPayment(PaymentRequest request) async {
+    try {
+      var response = await http.post('$apiUrl/payments',
+          body: json.encode(request.toJson()),
+          headers: {
+            'Content-type': 'application/json',
+            'Authorization': 'Bearer ${widget.vm.user.authToken}',
+          });
+      final Map<String, dynamic> requestPaymentResponse =
+          json.decode(response.body);
+      print(requestPaymentResponse);
+
+      if (response.statusCode == 401 ||
+          requestPaymentResponse['status'] == '401') {
+        print(requestPaymentResponse['error']);
+        throw "Account error, ${requestPaymentResponse['error']}";
+      } else if (response.statusCode == 201 || response.statusCode == 200) {
+        return requestPaymentResponse;
+      } else {
+        throw "Something doesn't feel right \n${requestPaymentResponse['message']}";
+      }
+    } on Exception catch (error) {
+      print(error);
+      throw error;
+    }
+  }
+
+  _pay(PaymentRequest request) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => new AlertDialog(
+            title: new Text('Processing Payment'),
+            content: Container(
+              child: FutureBuilder(
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasData) {
+                    return FutureBuilder(
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.hasData) {
+                          return Text("Payment Successfull");
+                        } else if (snapshot.hasError) {
+                          return Text("You didn't pay did you?");
+                        }
+                        return Text(
+                          'Payment Request sent. Please check ${request.phone} and confirm.',
+                        );
+                      },
+                      future: _waitForPayment(),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text(snapshot.error);
+                  }
+                  return CircularProgressIndicator();
+                },
+                future: _requestPayment(request),
+              ),
+            ),
+          ),
+    );
+  }
+
+  Future _waitForPayment() async {
+    await Future.delayed(Duration(seconds: 22));
+    return 'done';
+  }
+}
+
+_showLoadingDialog(BuildContext context, {text = "Please Wait"}) {
+  showDialog(
+    context: context,
+    builder: (_) => new AlertDialog(
+          title: new Text(text),
+          content: CircularProgressIndicator(),
+        ),
+  );
 }
 
 class LogoutContainer extends StatelessWidget {
