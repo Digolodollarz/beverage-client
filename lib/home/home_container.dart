@@ -145,8 +145,12 @@ class HomePageState extends State<HomePage> {
                   _paymentRequest.email = widget.vm.user.email.toLowerCase();
                   _paymentRequest.user = widget.vm.user;
                   _paymentRequest.phone = _ecoCashNumberController.text;
+                  print('PYMENT rEQASDF');
                   _scaffoldKey.currentState.showSnackBar(
-                    SnackBar(content: Text('Paying $_paymentRequest')),
+                    SnackBar(
+                      duration: Duration(seconds: 5),
+                      content: Text('Paying $_paymentRequest'),
+                    ),
                   );
                   print(_paymentRequest.toJson());
 //                  _pay(_paymentRequest);
