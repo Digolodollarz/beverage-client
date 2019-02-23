@@ -137,7 +137,7 @@ class HomePageState extends State<HomePage> {
 //                  widget.vm.makePaymentCallback(_paymentRequest);
                   final _paymentRequest = PaymentRequest();
                   _paymentRequest.items = {
-                    '${beverageAmount.toInt()}ml Juice':
+                    '${beverageAmount.toInt()}':
                         beverageAmount * 5 / 1000
                   };
                   _paymentRequest.reference = DateTime.now().toIso8601String();
@@ -146,12 +146,6 @@ class HomePageState extends State<HomePage> {
                   _paymentRequest.user = widget.vm.user;
                   _paymentRequest.phone = _ecoCashNumberController.text;
                   print('PYMENT rEQASDF');
-                  _scaffoldKey.currentState.showSnackBar(
-                    SnackBar(
-                      duration: Duration(seconds: 5),
-                      content: Text('Paying $_paymentRequest'),
-                    ),
-                  );
                   print(_paymentRequest.toJson());
 //                  _pay(_paymentRequest);
                   widget.vm.makePayment(_paymentRequest, context);

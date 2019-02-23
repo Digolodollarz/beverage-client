@@ -172,18 +172,30 @@ Container buildPaymentSuccessfulContainer(Store store, MakePayment action) {
           onPressed: () async {
             store.dispatch(MakePaymentSuccessful(action.request));
             var dispensing = await _requestBeverage(
-              action.request.reference,
+              action.request.items.keys.first,
               store.state.user.authToken,
             );
             if (dispensing) {
               Navigator.of(action.context).pop();
               showModalBottomSheet(
-                  context: action.context,
-                  builder: (context) {
-                    return Container(
-                      child: Text("Dispensing"),
-                    );
-                  });
+                context: action.context,
+                builder: (context) {
+                  return Container(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      children: <Widget>[
+                        Text("Dispensing"),
+                        RaisedButton(
+                          child: Text("Close"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        )
+                      ],
+                    ),
+                  );
+                },
+              );
             }
           },
           child: Text('Dispense'),
@@ -193,13 +205,18 @@ Container buildPaymentSuccessfulContainer(Store store, MakePayment action) {
   );
 }
 
-Future<bool> _requestBeverage(reference, authToken) async {
+//Forget it, security my foot.
+Future<bool> _requestBeverage(amount, authToken) async {
   try {
-    var response =
-        await http.post('$apiUrl/beverage/dispense', body: reference, headers: {
-      'Content-type': 'application/json',
-      'Authorization': 'Bearer $authToken',
-    });
+    var body = {"amount": amount};
+    var response = await http.post(
+      '$apiUrl/beverage',
+      body: json.encode(body),
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+    );
     final Map<String, dynamic> requestPaymentResponse =
         json.decode(response.body);
     if (response.statusCode == 401 ||
